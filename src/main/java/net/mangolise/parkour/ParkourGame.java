@@ -15,8 +15,11 @@ import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.event.GlobalEventHandler;
+import net.minestom.server.event.item.ItemDropEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.network.packet.server.play.TeamsPacket;
+import net.minestom.server.scoreboard.Team;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -84,6 +87,9 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
             throw new RuntimeException(e);
         }
 
+        Team team = MinecraftServer.getTeamManager().createTeam("all");
+        team.setCollisionRule(TeamsPacket.CollisionRule.NEVER);
+
         // Player spawning
         GlobalEventHandler events = MinecraftServer.getGlobalEventHandler();
         events.addListener(AsyncPlayerConfigurationEvent.class, e -> {
@@ -102,6 +108,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
             ItemHandler.giveGameItems(player);
             ParkourUtil.resetPlayer(player, mapData);
             player.updateViewableRule(viewer -> viewer.getTag(CAN_SEE_OTHERS_TAG));
+            player.setTeam(team);
         });
 
         events.addListener(PlayerTickEvent.class, e -> {
@@ -116,6 +123,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
             p.sendActionBar(Component.text(ParkourUtil.formatTime(finishTime)));
         });
 
+        events.addListener(ItemDropEvent.class, e -> e.setCancelled(true));
         events.addListener(PlayerMoveEvent.class, e -> MovementHandler.handlePlayerMoveEvent(e, this));
         events.addListener(PlayerUseItemEvent.class, e -> ItemHandler.handlePlayerUseItemEvent(e, this));
 

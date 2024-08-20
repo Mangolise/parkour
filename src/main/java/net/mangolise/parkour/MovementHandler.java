@@ -54,10 +54,13 @@ public class MovementHandler {
                         int deathCount = player.getTag(DEATH_COUNT_TAG);
                         player.setTag(FINISH_TIME_TAG, timeSpent);
 
-                        String subtitle = ParkourUtil.formatTime(timeSpent) + ", " + deathCount + " death";
+                        String timeSpentDis =  ParkourUtil.formatTime(timeSpent);
+                        String subtitle = timeSpentDis + ", " + deathCount + " death";
                         if (deathCount != 1) subtitle += 's';
 
                         player.setAllowFlying(true);
+                        player.sendMessage(Component.text(
+                                String.format("You won! Time: %s, Deaths: %d!", timeSpentDis, deathCount), NamedTextColor.GREEN));
 
                         final int stayTime = 6000;
                         if (false) { // if new personal best

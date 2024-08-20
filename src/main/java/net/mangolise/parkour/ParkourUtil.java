@@ -24,6 +24,7 @@ public class ParkourUtil {
         player.removeTag(FINISH_TIME_TAG);
         player.removeTag(DEATH_COUNT_TAG);
         player.setRespawnPoint(mapData.getCheckpoints().getFirst().getFirst());
+        player.setAllowFlying(false);
         respawnPlayer(player, true);
 
         player.playSound(Sound.sound(SoundEvent.BLOCK_AMETHYST_BLOCK_RESONATE, Sound.Source.PLAYER, 1.0f, 1.5f));
