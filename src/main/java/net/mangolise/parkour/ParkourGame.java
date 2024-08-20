@@ -67,7 +67,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
                         throw new IllegalArgumentException("Position without x y and z");
                     }
 
-                    Pos pos = new Pos(Double.parseDouble(strPos[0]) + 0.5, Double.parseDouble(strPos[1]) + 0.5,
+                    Pos pos = new Pos(Double.parseDouble(strPos[0]) + 0.5, Double.parseDouble(strPos[1]),
                             Double.parseDouble(strPos[2]) + 0.5);
 
                     if (strPos.length >= 4) {
