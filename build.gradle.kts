@@ -29,3 +29,35 @@ tasks.register("packageWorlds", net.mangolise.gamesdk.gradle.PackageWorldTask::c
 tasks.processResources {
     dependsOn("packageWorlds")
 }
+
+publishing {
+    repositories {
+        maven {
+            name = "serbleMaven"
+            url = uri("https://maven.serble.net/snapshots/")
+            credentials {
+                username = System.getenv("SERBLE_REPO_USERNAME")?:""
+                password = System.getenv("SERBLE_REPO_PASSWORD")?:""
+            }
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
+
+    publications {
+        create<MavenPublication>("mavenGitCommit") {
+            groupId = "net.mangolise"
+            artifactId = "parkour"
+            version = versionStr
+            from(components["java"])
+        }
+
+        create<MavenPublication>("mavenLatest") {
+            groupId = "net.mangolise"
+            artifactId = "parkour"
+            version = "latest"
+            from(components["java"])
+        }
+    }
+}
