@@ -8,6 +8,7 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Player;
+import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.player.PlayerMoveEvent;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.sound.SoundEvent;
@@ -63,7 +64,9 @@ public class MovementHandler {
                                 String.format("You won! Time: %s, Deaths: %d!", timeSpentDis, deathCount), NamedTextColor.GREEN));
 
                         final int stayTime = 6000;
-                        if (false) { // if new personal best
+                        FinishEvent event = new FinishEvent(player, timeSpent, deathCount);
+                        EventDispatcher.call(event);
+                        if (event.isNewRecord()) { // if new personal best
                             player.playSound(Sound.sound(SoundEvent.UI_TOAST_CHALLENGE_COMPLETE, Sound.Source.BLOCK, 0.5f, 1.0f));
 
                             Util.showTitle(player, 100, stayTime, 100,
