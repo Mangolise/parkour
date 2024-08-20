@@ -4,8 +4,10 @@ plugins {
     id("maven-publish")
 }
 
+var versionStr = System.getenv("GIT_COMMIT") ?: "dev"
+
 group = "net.mangolise"
-version = "1.0-SNAPSHOT"
+version = versionStr
 
 repositories {
     mavenCentral()
