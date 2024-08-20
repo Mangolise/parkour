@@ -52,7 +52,7 @@ public class ItemHandler {
             player.getInventory().setItemInHand(e.getHand(), createMenuItem(Material.ENDER_EYE, "Hide other players"));
         }
         else if (mat == Material.OXIDIZED_COPPER_DOOR) {
-            // TODO: leaving
+            player.kick("Bye!");
         }
     }
 }
