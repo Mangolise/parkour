@@ -1,6 +1,7 @@
 plugins {
     id("java")
     id("io.github.goooler.shadow") version("8.1.7")
+    id("maven-publish")
 }
 
 group = "net.mangolise"
