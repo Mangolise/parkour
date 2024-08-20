@@ -23,7 +23,7 @@ public class ParkourUtil {
         player.removeTag(CAN_JUMPPAD_TAG);
         player.removeTag(FINISH_TIME_TAG);
         player.removeTag(DEATH_COUNT_TAG);
-        player.setRespawnPoint(mapData.getCheckpoints().getFirst().getFirst());
+        player.setRespawnPoint(mapData.checkpoints.getFirst().getFirst());
         player.setAllowFlying(false);
         respawnPlayer(player, true);
 

@@ -1,8 +1,5 @@
 package net.mangolise.parkour;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import net.kyori.adventure.text.Component;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.GameModeCommandFeature;
@@ -10,7 +7,6 @@ import net.mangolise.gamesdk.features.SignFeature;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.Util;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
@@ -34,7 +30,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
     public static final Tag<Long> START_TIME_TAG = Tag.Long("start_time");
     public static final Tag<Long> FINISH_TIME_TAG = Tag.Long("finish_time");
 
-    public final MapData mapData = new MapData(new ArrayList<>());
+    public @UnknownNullability MapData mapData;
     public @UnknownNullability Instance instance;
 
     public ParkourGame(Config config) {
@@ -50,39 +46,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
 
         // Load MapData
         try {
-            String stringJson = new String(Objects.requireNonNull(ClassLoader.getSystemResourceAsStream(
-                    "worlds/" + config.worldName + ".json")).readAllBytes());
-
-            Gson gson = new Gson();
-            JsonObject root = gson.fromJson(stringJson, JsonObject.class);
-
-            for (JsonElement rawPoss : root.getAsJsonArray("checkpoints")) {
-                String[] strPoss = rawPoss.getAsString().split("\\|");
-                List<Pos> poss = new ArrayList<>();
-
-                for (String rawPos : strPoss) {
-                    String[] strPos = rawPos.split(" ");
-
-                    if (strPos.length < 3) {
-                        throw new IllegalArgumentException("Position without x y and z");
-                    }
-
-                    Pos pos = new Pos(Double.parseDouble(strPos[0]) + 0.5, Double.parseDouble(strPos[1]),
-                            Double.parseDouble(strPos[2]) + 0.5);
-
-                    if (strPos.length >= 4) {
-                        pos = pos.withYaw(Float.parseFloat(strPos[3]));
-                    }
-
-                    if (strPos.length >= 5) {
-                        pos = pos.withPitch(Float.parseFloat(strPos[4]));
-                    }
-
-                    poss.add(pos);
-                }
-
-                mapData.checkpoints.add(poss);
-            }
+            mapData = new MapData(instance, config.worldName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -140,9 +104,4 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
 
     public record PlayerConfig(UUID uuid, String name, long bestTime) { }
     public record Config(String worldName, List<PlayerConfig> records) { }
-    public record MapData(List<List<Pos>> checkpoints) {
-        public List<List<Pos>> getCheckpoints() {
-            return checkpoints;
-        }
-    }
 }

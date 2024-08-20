@@ -23,7 +23,7 @@ public class MovementHandler {
         Pos newPos = e.getNewPosition();
         Player player = e.getPlayer();
 
-        List<List<Pos>> checkpointss = game.mapData.getCheckpoints();
+        List<List<Pos>> checkpointss = game.mapData.checkpoints;
         int currentCheckpoint = player.getTag(CURRENT_CHECKPOINT_TAG);
         int checkpointCount = checkpointss.size();
 
