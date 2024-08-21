@@ -57,17 +57,16 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
         // Player spawning
         GlobalEventHandler events = MinecraftServer.getGlobalEventHandler();
         events.addListener(AsyncPlayerConfigurationEvent.class, e -> {
-            Player player = e.getPlayer();
             e.setSpawningInstance(instance);
-
-            player.setRespawnPoint(mapData.checkpoints.getFirst().getFirst());
-            player.setGameMode(GameMode.ADVENTURE);
-            player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).setBaseValue(-128);
-            player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).setBaseValue(-128);
+            e.getPlayer().setGameMode(GameMode.ADVENTURE);
         });
 
         events.addListener(PlayerSpawnEvent.class, e -> {
             Player player = e.getPlayer();
+
+            player.setRespawnPoint(mapData.checkpoints.getFirst().getFirst());
+            player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).setBaseValue(-128);
+            player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).setBaseValue(-128);
 
             ItemHandler.giveGameItems(player);
             ParkourUtil.resetPlayer(player, mapData);
