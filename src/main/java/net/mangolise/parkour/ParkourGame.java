@@ -29,12 +29,14 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
     public static final Tag<Integer> DEATH_COUNT_TAG = Tag.Integer("death_count").defaultValue(0);
     public static final Tag<Long> START_TIME_TAG = Tag.Long("start_time");
     public static final Tag<Long> FINISH_TIME_TAG = Tag.Long("finish_time");
+    public static @UnknownNullability ParkourGame game;
 
     public @UnknownNullability MapData mapData;
     public @UnknownNullability Instance instance;
 
     public ParkourGame(Config config) {
         super(config);
+        game = this;
     }
 
     @Override
@@ -53,6 +55,8 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
 
         Team team = MinecraftServer.getTeamManager().createTeam("all");
         team.setCollisionRule(TeamsPacket.CollisionRule.NEVER);
+
+        MinecraftServer.getCommandManager().register(new CheckpointCommand());
 
         // Player spawning
         GlobalEventHandler events = MinecraftServer.getGlobalEventHandler();
