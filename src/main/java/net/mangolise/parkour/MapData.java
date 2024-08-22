@@ -1,6 +1,7 @@
 package net.mangolise.parkour;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minestom.server.coordinate.Pos;
@@ -51,7 +52,7 @@ public class MapData {
             checkpoints.add(poss);
         }
 
-        for (JsonElement rawPos : root.getAsJsonArray("pistons")) {
+        for (JsonElement rawPos : Objects.requireNonNullElseGet(root.getAsJsonArray("pistons"), JsonArray::new)) {
             String[] strPos = rawPos.getAsString().split(" ");
 
             if (strPos.length < 3) {

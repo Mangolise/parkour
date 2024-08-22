@@ -3,6 +3,7 @@ package net.mangolise.parkour;
 import net.kyori.adventure.text.Component;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.GameModeCommandFeature;
+import net.mangolise.gamesdk.features.PlayerHeadFeature;
 import net.mangolise.gamesdk.features.SignFeature;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.Util;
@@ -101,6 +102,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
     public List<Feature<?>> features() {
         return List.of(
                 new SignFeature(),
+                new PlayerHeadFeature(),
                 new GameModeCommandFeature()
         );
     }
