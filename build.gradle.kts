@@ -33,6 +33,10 @@ tasks.processResources {
     dependsOn("packageWorlds")
 }
 
+java {
+    withSourcesJar()
+}
+
 publishing {
     repositories {
         maven {
