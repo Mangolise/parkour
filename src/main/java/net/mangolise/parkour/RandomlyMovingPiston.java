@@ -5,16 +5,15 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class RandomlyMovingPiston extends MoveablePiston {
     private int timer;
-    private static final Random random = new Random();
 
     public RandomlyMovingPiston(Instance instance, Vec pos, String facing) {
         super(instance, pos, facing);
 
-        timer = random.nextInt(0, 120);
+        timer = ThreadLocalRandom.current().nextInt(0, 120);
 
         instance.eventNode().addListener(InstanceTickEvent.class, e -> tick());
     }
@@ -27,7 +26,7 @@ public class RandomlyMovingPiston extends MoveablePiston {
 
         if (isOpen()) {
             close();
-            timer = random.nextInt(160, 320);
+            timer = ThreadLocalRandom.current().nextInt(160, 320);
         }
         else {
             open();
