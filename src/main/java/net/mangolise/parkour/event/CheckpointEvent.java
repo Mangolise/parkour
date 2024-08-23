@@ -1,4 +1,4 @@
-package net.mangolise.parkour;
+package net.mangolise.parkour.event;
 
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.trait.PlayerEvent;

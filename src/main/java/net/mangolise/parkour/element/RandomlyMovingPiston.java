@@ -1,4 +1,4 @@
-package net.mangolise.parkour;
+package net.mangolise.parkour.element;
 
 import net.mangolise.gamesdk.block.MoveablePiston;
 import net.minestom.server.coordinate.Vec;

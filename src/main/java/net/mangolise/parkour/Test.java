@@ -18,7 +18,7 @@ public class Test {
 
         server.start("0.0.0.0", GameSdkUtils.getConfiguredPort());
 
-        ParkourGame.Config config = new ParkourGame.Config("nether", new ArrayList<>());
+        ParkourGame.Config config = new ParkourGame.Config("portal_0", new ArrayList<>());
         ParkourGame game = new ParkourGame(config);
         game.setup();
     }

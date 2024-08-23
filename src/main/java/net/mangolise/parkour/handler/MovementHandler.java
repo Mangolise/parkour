@@ -1,7 +1,10 @@
-package net.mangolise.parkour;
+package net.mangolise.parkour.handler;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.mangolise.parkour.MapData;
+import net.mangolise.parkour.ParkourGame;
+import net.mangolise.parkour.ParkourUtil;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -19,7 +22,7 @@ public class MovementHandler {
         Pos newPos = e.getNewPosition();
         Player player = e.getPlayer();
 
-        List<List<Pos>> checkpointss = game.mapData.checkpoints;
+        List<List<Pos>> checkpointss = MapData.checkpoints;
         int currentCheckpoint = player.getTag(CURRENT_CHECKPOINT_TAG);
         int checkpointCount = checkpointss.size();
 

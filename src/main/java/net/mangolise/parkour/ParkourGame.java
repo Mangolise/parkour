@@ -7,8 +7,14 @@ import net.mangolise.gamesdk.features.PlayerHeadFeature;
 import net.mangolise.gamesdk.features.SignFeature;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.GameSdkUtils;
-import net.mangolise.gamesdk.util.Util;
+import net.mangolise.parkour.command.CheckpointCommand;
+import net.mangolise.parkour.element.CubeEntity;
+import net.mangolise.parkour.handler.ItemHandler;
+import net.mangolise.parkour.handler.MovementHandler;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.coordinate.Vec;
+import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
@@ -33,6 +39,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
     public static final Tag<Long> FINISH_TIME_TAG = Tag.Long("finish_time");
     public static @UnknownNullability ParkourGame game;
 
+    public final Map<UUID, List<CubeEntity>> cubes = new HashMap<>();
     public @UnknownNullability MapData mapData;
     public @UnknownNullability Instance instance;
 
@@ -70,14 +77,68 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
         events.addListener(PlayerSpawnEvent.class, e -> {
             Player player = e.getPlayer();
 
-            player.setRespawnPoint(mapData.checkpoints.getFirst().getFirst());
+            // init stuff
+            player.setRespawnPoint(MapData.checkpoints.getFirst().getFirst());
             player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).setBaseValue(-128);
             player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).setBaseValue(-128);
 
             ItemHandler.giveGameItems(player);
-            ParkourUtil.resetPlayer(player, mapData);
+            ParkourUtil.resetPlayer(player);
             player.updateViewableRule(viewer -> viewer.getTag(CAN_SEE_OTHERS_TAG));
             player.setTeam(team);
+
+            // cube
+            if (!MapData.cubeSpawns.isEmpty()) {
+                List<CubeEntity> cubeList = new ArrayList<>();
+                for (Vec pos : MapData.cubeSpawns) {
+                    cubeList.add(new CubeEntity(game.instance, player, pos));
+                }
+
+                cubes.put(player.getUuid(), cubeList);
+            }
+        });
+
+        events.addListener(PlayerDisconnectEvent.class, e -> {
+            if (!MapData.cubeSpawns.isEmpty()) {
+                UUID uuid = e.getPlayer().getUuid();
+                for (CubeEntity cube : cubes.get(uuid)) {
+                    cube.remove();
+                }
+
+                cubes.remove(uuid);
+            }
+        });
+
+        events.addListener(PlayerSwapItemEvent.class, e -> {
+            if (!MapData.portal) {
+                return;
+            }
+
+            e.setCancelled(true);
+
+            Player player = e.getPlayer();
+//            Entity lookingAt = ParkourUtil.getTarget(player, instance.getNearbyEntities(player.getPosition(), 5f));
+
+            Entity lookingAt = null;
+
+            if (player.hasTag(CubeEntity.CURRENTLY_HOLDING)) {
+                lookingAt = instance.getEntityByUuid(player.getTag(CubeEntity.CURRENTLY_HOLDING));
+            } else {
+                Vec rayStart = player.getPosition().asVec().add(new Vec(0, player.getEyeHeight(), 0));
+                Vec rayDir = player.getPosition().direction();
+
+                for (Entity entity : instance.getNearbyEntities(player.getPosition(), 5f)) {
+                    if (entity.getEntityType() == EntityType.BLOCK_DISPLAY && player.getUuid().equals(entity.getTag(CubeEntity.CUBE_OWNER)) &&
+                            entity.getBoundingBox().boundingBoxRayIntersectionCheck(rayStart, rayDir, entity.getPosition())) {
+                        lookingAt = entity;
+                        break;
+                    }
+                }
+            }
+
+            if (lookingAt != null) {
+                ((CubeEntity) lookingAt).interact();
+            }
         });
 
         events.addListener(PlayerTickEvent.class, e -> {

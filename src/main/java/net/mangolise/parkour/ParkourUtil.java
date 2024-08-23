@@ -4,7 +4,8 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.gamesdk.util.GameSdkUtils;
-import net.mangolise.gamesdk.util.Util;
+import net.mangolise.parkour.event.CheckpointEvent;
+import net.mangolise.parkour.event.FinishEvent;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
@@ -23,13 +24,13 @@ public class ParkourUtil {
         }
     }
 
-    public static void resetPlayer(Player player, MapData mapData) {
+    public static void resetPlayer(Player player) {
         player.setTag(START_TIME_TAG, System.currentTimeMillis());
         player.removeTag(CURRENT_CHECKPOINT_TAG);
         player.removeTag(CAN_JUMPPAD_TAG);
         player.removeTag(FINISH_TIME_TAG);
         player.removeTag(DEATH_COUNT_TAG);
-        player.setRespawnPoint(mapData.checkpoints.getFirst().getFirst());
+        player.setRespawnPoint(MapData.checkpoints.getFirst().getFirst());
         player.setAllowFlying(false);
         player.setFlying(false);
         respawnPlayer(player, true);
@@ -42,7 +43,7 @@ public class ParkourUtil {
         player.setTag(CURRENT_CHECKPOINT_TAG, index);
 
         // if normal checkpoint
-        int checkpointCount = game.mapData.checkpoints.size();
+        int checkpointCount = MapData.checkpoints.size();
         if (index != checkpointCount-1) {
             player.playSound(Sound.sound(SoundEvent.ENTITY_EXPERIENCE_ORB_PICKUP, Sound.Source.BLOCK, 0.5f, 1.0f));
             GameSdkUtils.showTitle(player, 100, 1200, 100,

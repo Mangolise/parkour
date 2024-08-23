@@ -1,13 +1,13 @@
-package net.mangolise.parkour;
+package net.mangolise.parkour.command;
 
+import net.mangolise.parkour.MapData;
+import net.mangolise.parkour.ParkourUtil;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
-
-import static net.mangolise.parkour.ParkourGame.game;
 
 public class CheckpointCommand extends Command {
     public CheckpointCommand() {
@@ -31,7 +31,7 @@ public class CheckpointCommand extends Command {
 
         Pos checkpoint;
         try {
-            checkpoint = game.mapData.checkpoints.get(index).get(which);
+            checkpoint = MapData.checkpoints.get(index).get(which);
         } catch (IndexOutOfBoundsException ignored) {
             sender.sendMessage("wrong checkpoint!");
             return;

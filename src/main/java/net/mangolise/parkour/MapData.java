@@ -1,9 +1,9 @@
 package net.mangolise.parkour;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
+import net.mangolise.parkour.element.Door;
+import net.mangolise.parkour.element.Plate;
+import net.mangolise.parkour.element.RandomlyMovingPiston;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.Instance;
@@ -14,8 +14,12 @@ import java.util.List;
 import java.util.Objects;
 
 public class MapData {
-    public List<List<Pos>> checkpoints = new ArrayList<>();
-    public List<RandomlyMovingPiston> pistons = new ArrayList<>();
+    public static List<List<Pos>> checkpoints = new ArrayList<>();
+    public static List<RandomlyMovingPiston> pistons = new ArrayList<>();
+    public static List<Vec> cubeSpawns = new ArrayList<>();
+    public static List<Plate> plates = new ArrayList<>();
+    public static List<Door> doors = new ArrayList<>();
+    public static boolean portal = false;
 
     public MapData(Instance instance, String worldName) throws IOException {
         String stringJson = new String(Objects.requireNonNull(ClassLoader.getSystemResourceAsStream(
@@ -30,13 +34,7 @@ public class MapData {
 
             for (String rawPos : strPoss) {
                 String[] strPos = rawPos.split(" ");
-
-                if (strPos.length < 3) {
-                    throw new IllegalArgumentException("checkpoint without x y and z");
-                }
-
-                Pos pos = new Pos(Double.parseDouble(strPos[0]) + 0.5, Double.parseDouble(strPos[1]),
-                        Double.parseDouble(strPos[2]) + 0.5);
+                Pos pos = getVecFromSplit(strPos).add(0.5, 0.0, 0.5).asPosition();
 
                 if (strPos.length >= 4) {
                     pos = pos.withYaw(Float.parseFloat(strPos[3]));
@@ -52,16 +50,50 @@ public class MapData {
             checkpoints.add(poss);
         }
 
-        for (JsonElement rawPos : Objects.requireNonNullElseGet(root.getAsJsonArray("pistons"), JsonArray::new)) {
+        for (JsonElement rawPos : getArrayOrEmpty(root, "pistons")) {
             String[] strPos = rawPos.getAsString().split(" ");
+            Vec pos = getVecFromSplit(strPos);
 
-            if (strPos.length < 3) {
-                throw new IllegalArgumentException("piston without x y z and facing dir");
+            if (strPos.length < 4) {
+                throw new IllegalArgumentException("piston without facing dir");
             }
-
-            Vec pos = new Vec(Double.parseDouble(strPos[0]), Double.parseDouble(strPos[1]), Double.parseDouble(strPos[2]));
 
             pistons.add(new RandomlyMovingPiston(instance, pos, strPos[3]));
         }
+
+        JsonObject portal = root.getAsJsonObject("portal");
+        if (portal != null) {
+            MapData.portal = true;
+
+            for (JsonElement rawPos : getArrayOrEmpty(portal, "cubes")) {
+                String[] strPos = rawPos.getAsString().split(" ");
+                cubeSpawns.add(getVecFromSplit(strPos));
+            }
+
+            for (JsonElement rawPos : getArrayOrEmpty(portal, "doors")) {
+                String[] strPos = rawPos.getAsString().split(" ");
+                doors.add(new Door(ParkourGame.game.instance, getVecFromSplit(strPos)));
+            }
+
+            for (JsonElement rawPos : getArrayOrEmpty(portal, "plates")) {
+                String[] posEqu = rawPos.getAsString().split("=");
+                String[] strPos = posEqu[0].split(" ");
+                String[] result = posEqu[1].split(" ");
+
+                plates.add(new Plate(ParkourGame.game.instance, getVecFromSplit(strPos), result[0], Integer.parseInt(result[1])));
+            }
+        }
+    }
+
+    private Vec getVecFromSplit(String[] strPos) {
+        if (strPos.length < 3) {
+            throw new IllegalArgumentException("coordinate without x, y, and z");
+        }
+
+        return new Vec(Double.parseDouble(strPos[0]), Double.parseDouble(strPos[1]), Double.parseDouble(strPos[2]));
+    }
+
+    private JsonArray getArrayOrEmpty(JsonObject object, String path) {
+        return Objects.requireNonNullElseGet(object.getAsJsonArray(path), JsonArray::new);
     }
 }
