@@ -49,8 +49,8 @@ public class ParkourUtil {
                     Component.empty(),
                     Component.text("Checkpoint reached " + index + "/" +
                             (checkpointCount - 1), NamedTextColor.DARK_GREEN));
-        }
-        else { // if win
+            EventDispatcher.call(new CheckpointEvent(player, index));
+        } else { // if win
             long timeSpent = System.currentTimeMillis() - player.getTag(START_TIME_TAG);
             int deathCount = player.getTag(DEATH_COUNT_TAG);
             player.setTag(FINISH_TIME_TAG, timeSpent);
