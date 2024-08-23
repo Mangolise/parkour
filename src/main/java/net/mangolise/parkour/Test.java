@@ -1,6 +1,6 @@
 package net.mangolise.parkour;
 
-import net.mangolise.gamesdk.util.Util;
+import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.extras.bungee.BungeeCordProxy;
 
@@ -10,13 +10,13 @@ import java.util.ArrayList;
 public class Test {
     public static void main(String[] args) {
         MinecraftServer server = MinecraftServer.init();
-        MinecraftServer.getConnectionManager().setUuidProvider((connection, username) -> Util.createFakeUUID(username));
+        MinecraftServer.getConnectionManager().setUuidProvider((connection, username) -> GameSdkUtils.createFakeUUID(username));
 
-        if (Util.useBungeeCord()) {
+        if (GameSdkUtils.useBungeeCord()) {
             BungeeCordProxy.enable();
         }
 
-        server.start("0.0.0.0", Util.getConfiguredPort());
+        server.start("0.0.0.0", GameSdkUtils.getConfiguredPort());
 
         ParkourGame.Config config = new ParkourGame.Config("nether", new ArrayList<>());
         ParkourGame game = new ParkourGame(config);

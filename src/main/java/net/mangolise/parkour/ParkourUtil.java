@@ -3,6 +3,7 @@ package net.mangolise.parkour;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.gamesdk.util.Util;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
@@ -44,7 +45,7 @@ public class ParkourUtil {
         int checkpointCount = game.mapData.checkpoints.size();
         if (index != checkpointCount-1) {
             player.playSound(Sound.sound(SoundEvent.ENTITY_EXPERIENCE_ORB_PICKUP, Sound.Source.BLOCK, 0.5f, 1.0f));
-            Util.showTitle(player, 100, 1200, 100,
+            GameSdkUtils.showTitle(player, 100, 1200, 100,
                     Component.empty(),
                     Component.text("Checkpoint reached " + index + "/" +
                             (checkpointCount - 1), NamedTextColor.DARK_GREEN));
@@ -68,13 +69,13 @@ public class ParkourUtil {
             if (event.isNewRecord()) { // if new personal best
                 player.playSound(Sound.sound(SoundEvent.UI_TOAST_CHALLENGE_COMPLETE, Sound.Source.BLOCK, 0.5f, 1.0f));
 
-                Util.showTitle(player, 100, stayTime, 100,
+                GameSdkUtils.showTitle(player, 100, stayTime, 100,
                         Component.text("New Personal Best!"),
                         Component.text(subtitle, NamedTextColor.GREEN));
             } else { // normal win
                 player.playSound(Sound.sound(SoundEvent.ENTITY_PLAYER_LEVELUP, Sound.Source.BLOCK, 0.5f, 1.0f));
 
-                Util.showTitle(player, 100, stayTime, 100,
+                GameSdkUtils.showTitle(player, 100, stayTime, 100,
                         Component.text("You Won!"),
                         Component.text(subtitle, NamedTextColor.GREEN));
             }

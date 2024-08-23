@@ -6,6 +6,7 @@ import net.mangolise.gamesdk.features.GameModeCommandFeature;
 import net.mangolise.gamesdk.features.PlayerHeadFeature;
 import net.mangolise.gamesdk.features.SignFeature;
 import net.mangolise.gamesdk.log.Log;
+import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.gamesdk.util.Util;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.GameMode;
@@ -44,7 +45,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
     public void setup() {
         super.setup();
         instance = MinecraftServer.getInstanceManager().createInstanceContainer(
-                Util.getPolarLoaderFromResource("worlds/" + config.worldName + ".polar"));
+                GameSdkUtils.getPolarLoaderFromResource("worlds/" + config.worldName + ".polar"));
         instance.enableAutoChunkLoad(true);
 
         // Load MapData
