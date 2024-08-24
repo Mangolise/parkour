@@ -1,7 +1,6 @@
 package net.mangolise.parkour.element;
 
 import net.kyori.adventure.sound.Sound;
-import net.mangolise.parkour.MapData;
 import net.mangolise.parkour.ParkourGame;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
@@ -16,15 +15,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public class Plate implements BlockHandler {
-    private final String targetType;
-    private final int target;
+    private final List<ActivatableElement> targets;
 
     // is a set bc it can be pressed on unpressed on each player separately
     private final Set<UUID> pressedPlayers = new HashSet<>();
 
-    public Plate(Instance instance, Point pos, String targetType, int target) {
-        this.targetType = targetType;
-        this.target = target;
+    public Plate(Instance instance, Point pos, List<ActivatableElement> targets) {
+        this.targets = targets;
 
         instance.setBlock(pos, createPlate("0").withHandler(this));
     }
@@ -63,20 +60,18 @@ public class Plate implements BlockHandler {
                 player.sendPacket(new BlockChangePacket(pos, createPlate("15")));
                 player.playSound(Sound.sound(SoundEvent.BLOCK_METAL_PRESSURE_PLATE_CLICK_ON, Sound.Source.BLOCK,
                         1f, 1f), pos);
+
+                for (ActivatableElement target : targets) {
+                    target.activate(player);
+                }
             } else { // released
                 pressedPlayers.remove(uuid);
                 player.sendPacket(new BlockChangePacket(pos, createPlate("0")));
                 player.playSound(Sound.sound(SoundEvent.BLOCK_METAL_PRESSURE_PLATE_CLICK_OFF, Sound.Source.BLOCK,
                         1f, 1f), pos);
-            }
 
-            switch (targetType) {
-                case "door" -> {
-                    if (justPressed) {
-                        MapData.doors.get(target).open(player);
-                    } else {
-                        MapData.doors.get(target).close(player);
-                    }
+                for (ActivatableElement target : targets) {
+                    target.deactivate(player);
                 }
             }
         }

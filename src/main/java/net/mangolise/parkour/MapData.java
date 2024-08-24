@@ -1,6 +1,7 @@
 package net.mangolise.parkour;
 
 import com.google.gson.*;
+import net.mangolise.parkour.element.ActivatableElement;
 import net.mangolise.parkour.element.Door;
 import net.mangolise.parkour.element.Plate;
 import net.mangolise.parkour.element.RandomlyMovingPiston;
@@ -29,7 +30,7 @@ public class MapData {
         JsonObject root = gson.fromJson(stringJson, JsonObject.class);
 
         for (JsonElement rawPoss : root.getAsJsonArray("checkpoints")) {
-            String[] strPoss = rawPoss.getAsString().split("\\|");
+            String[] strPoss = rawPoss.getAsString().split(",");
             List<Pos> poss = new ArrayList<>();
 
             for (String rawPos : strPoss) {
@@ -71,16 +72,31 @@ public class MapData {
             }
 
             for (JsonElement rawPos : getArrayOrEmpty(portal, "doors")) {
-                String[] strPos = rawPos.getAsString().split(" ");
-                doors.add(new Door(ParkourGame.game.instance, getVecFromSplit(strPos)));
+                String[] positions = rawPos.getAsString().split(",");
+
+                List<Vec> pos = new ArrayList<>(positions.length);
+                for (String position : positions) {
+                    String[] strPos = position.split(" ");
+                    pos.add(getVecFromSplit(strPos));
+                }
+
+                doors.add(new Door(ParkourGame.game.instance, pos));
             }
 
             for (JsonElement rawPos : getArrayOrEmpty(portal, "plates")) {
                 String[] posEqu = rawPos.getAsString().split("=");
                 String[] strPos = posEqu[0].split(" ");
-                String[] result = posEqu[1].split(" ");
 
-                plates.add(new Plate(ParkourGame.game.instance, getVecFromSplit(strPos), result[0], Integer.parseInt(result[1])));
+                String[] results = posEqu[1].split(",");
+                List<ActivatableElement> targets = new ArrayList<>(results.length);
+                for (String result : results) {
+                    String[] resplit = result.split(" ");
+                    if (resplit[0].equals("door")) {
+                        targets.add(doors.get(Integer.parseInt(resplit[1])));
+                    }
+                }
+
+                plates.add(new Plate(ParkourGame.game.instance, getVecFromSplit(strPos), targets));
             }
         }
     }

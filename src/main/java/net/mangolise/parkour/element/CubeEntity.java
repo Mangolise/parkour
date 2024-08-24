@@ -19,6 +19,7 @@ public class CubeEntity extends Entity {
     public static Tag<UUID> CURRENTLY_HOLDING = Tag.UUID("currently_holding");
 
     private final Entity childEntity;
+    private final LivingEntity shulker;
 
     private final Player owner;
     private boolean held = false;
@@ -35,11 +36,11 @@ public class CubeEntity extends Entity {
         });
 
         setTag(CUBE_OWNER, owner.getUuid());
-        updateViewableRule(viewer -> viewer.getUuid().equals(getTag(CUBE_OWNER)));
+        setViewableRule(this);
 
-
-
+        // Child entity
         childEntity = new Entity(EntityType.BLOCK_DISPLAY);
+        setViewableRule(childEntity);
         childEntity.setBoundingBox(new BoundingBox(1d, 1d, 1d, new Vec(-0.5, 0.0, -0.5)));
         childEntity.setInstance(instance);
         childEntity.teleport(pos.asPosition());
@@ -50,15 +51,20 @@ public class CubeEntity extends Entity {
             meta.setPosRotInterpolationDuration(1);
         });
 
-        LivingEntity shulker = new LivingEntity(EntityType.SHULKER);
+        // Shulker
+        shulker = new LivingEntity(EntityType.SHULKER);
+        setViewableRule(shulker);
         shulker.setInstance(instance);
         shulker.teleport(pos.asPosition());
-        shulker.updateViewableRule(viewer -> viewer.getUuid().equals(getTag(CUBE_OWNER)));
         shulker.setInvisible(true);
         childEntity.addPassenger(shulker);
 
         setInstance(instance);
         teleport(pos.asPosition());
+    }
+
+    private void setViewableRule(Entity entity) {
+        entity.updateViewableRule(viewer -> viewer.getUuid().equals(getTag(CUBE_OWNER)));
     }
 
     public void interact() {
@@ -107,5 +113,13 @@ public class CubeEntity extends Entity {
         for (Door door : MapData.doors) {
             door.setBlocks(owner, true);
         }
+    }
+
+    @Override
+    public void remove() {
+        shulker.remove();
+        childEntity.remove();
+
+        super.remove();
     }
 }

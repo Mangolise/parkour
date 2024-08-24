@@ -1,36 +1,42 @@
 package net.mangolise.parkour.element;
 
-import net.minestom.server.coordinate.Point;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.play.BlockChangePacket;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class Door {
+public class Door implements ActivatableElement {
     private final Instance instance;
-    private final Point pos;
+    private final List<Vec> positions;
     private final Block block;
     private final Set<UUID> openPlayers = new HashSet<>();
 
-    public Door(Instance instance, Point pos) {
+    public Door(Instance instance, List<Vec> pos) {
         this.instance = instance;
-        this.pos = pos;
-        this.block = Block.COAL_BLOCK;
+        this.positions = pos;
+        this.block = Block.POLISHED_TUFF;
 
-        instance.setBlock(pos, block);
-        instance.setBlock(pos.add(0, 1, 0), block);
+        for (Vec position : positions) {
+            instance.setBlock(position, block);
+            instance.setBlock(position.add(0, 1, 0), block);
+            instance.setBlock(position.add(0, 2, 0), block);
+        }
     }
 
-    public void open(Player player) {
+    @Override
+    public void activate(Player player) {
         setBlocksPacket(player, Block.AIR);
         openPlayers.add(player.getUuid());
     }
 
-    public void close(Player player) {
+    @Override
+    public void deactivate(Player player) {
         setBlocksPacket(player, Block.COAL_BLOCK);
         openPlayers.remove(player.getUuid());
     }
@@ -40,18 +46,24 @@ public class Door {
     }
 
     private void setBlocksPacket(Player player, Block block) {
-        player.sendPacket(new BlockChangePacket(pos, block));
-        player.sendPacket(new BlockChangePacket(pos.add(0, 1, 0), block));
+        for (Vec position : positions) {
+            player.sendPacket(new BlockChangePacket(position, block));
+            player.sendPacket(new BlockChangePacket(position.add(0, 1, 0), block));
+            player.sendPacket(new BlockChangePacket(position.add(0, 2, 0), block));
+        }
     }
 
     private void setBlocksReal(boolean exist, boolean doPacket) {
         Block newBlock = exist ? block : Block.AIR;
-        if (instance.getBlock(pos).compare(newBlock)) {
+        if (instance.getBlock(positions.getFirst()).compare(newBlock)) {
             return;
         }
 
-        instance.setBlock(pos, newBlock);
-        instance.setBlock(pos.add(0, 1, 0), newBlock);
+        for (Vec position : positions) {
+            instance.setBlock(position, newBlock);
+            instance.setBlock(position.add(0, 1, 0), newBlock);
+            instance.setBlock(position.add(0, 2, 0), newBlock);
+        }
 
         if (!doPacket) {
             return;

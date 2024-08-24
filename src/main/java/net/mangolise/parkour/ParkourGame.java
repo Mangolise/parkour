@@ -86,28 +86,9 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
             ParkourUtil.resetPlayer(player);
             player.updateViewableRule(viewer -> viewer.getTag(CAN_SEE_OTHERS_TAG));
             player.setTeam(team);
-
-            // cube
-            if (!MapData.cubeSpawns.isEmpty()) {
-                List<CubeEntity> cubeList = new ArrayList<>();
-                for (Vec pos : MapData.cubeSpawns) {
-                    cubeList.add(new CubeEntity(game.instance, player, pos));
-                }
-
-                cubes.put(player.getUuid(), cubeList);
-            }
         });
 
-        events.addListener(PlayerDisconnectEvent.class, e -> {
-            if (!MapData.cubeSpawns.isEmpty()) {
-                UUID uuid = e.getPlayer().getUuid();
-                for (CubeEntity cube : cubes.get(uuid)) {
-                    cube.remove();
-                }
-
-                cubes.remove(uuid);
-            }
-        });
+        events.addListener(PlayerDisconnectEvent.class, e -> ParkourUtil.despawnCubes(e.getPlayer()));
 
         events.addListener(PlayerSwapItemEvent.class, e -> {
             if (!MapData.portal) {

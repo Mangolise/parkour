@@ -4,12 +4,20 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.gamesdk.util.GameSdkUtils;
+import net.mangolise.parkour.element.CubeEntity;
+import net.mangolise.parkour.element.Door;
 import net.mangolise.parkour.event.CheckpointEvent;
 import net.mangolise.parkour.event.FinishEvent;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.sound.SoundEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 import static net.mangolise.parkour.ParkourGame.*;
 
@@ -34,6 +42,13 @@ public class ParkourUtil {
         player.setAllowFlying(false);
         player.setFlying(false);
         respawnPlayer(player, true);
+
+        despawnCubes(player);
+        spawnCubes(player);
+
+        for (Door door : MapData.doors) {
+            door.deactivate(player);
+        }
 
         player.playSound(Sound.sound(SoundEvent.BLOCK_AMETHYST_BLOCK_RESONATE, Sound.Source.PLAYER, 1.0f, 1.5f));
     }
@@ -87,5 +102,27 @@ public class ParkourUtil {
         return String.format("%02d", time / 60000) + ":" +
                 String.format("%02d", time / 1000 % 60) + "." +
                 String.format("%02d", time / 50 * 5 % 100);
+    }
+
+    public static void spawnCubes(Player player) {
+        if (!MapData.cubeSpawns.isEmpty()) {
+            List<CubeEntity> cubeList = new ArrayList<>();
+            for (Vec pos : MapData.cubeSpawns) {
+                cubeList.add(new CubeEntity(game.instance, player, pos));
+            }
+
+            game.cubes.put(player.getUuid(), cubeList);
+        }
+    }
+
+    public static void despawnCubes(Player player) {
+        if (!MapData.cubeSpawns.isEmpty()) {
+            UUID uuid = player.getUuid();
+            for (CubeEntity cube : Objects.requireNonNullElseGet(game.cubes.get(uuid), List::<CubeEntity>of)) {
+                cube.remove();
+            }
+
+            ParkourGame.game.cubes.remove(uuid);
+        }
     }
 }
