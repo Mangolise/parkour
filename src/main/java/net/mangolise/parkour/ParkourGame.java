@@ -3,6 +3,7 @@ package net.mangolise.parkour;
 import net.kyori.adventure.text.Component;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.GameModeCommandFeature;
+import net.mangolise.gamesdk.features.PacketDebugFeature;
 import net.mangolise.gamesdk.features.PlayerHeadFeature;
 import net.mangolise.gamesdk.features.SignFeature;
 import net.mangolise.gamesdk.log.Log;
@@ -11,6 +12,7 @@ import net.mangolise.parkour.command.CheckpointCommand;
 import net.mangolise.parkour.element.CubeEntity;
 import net.mangolise.parkour.handler.ItemHandler;
 import net.mangolise.parkour.handler.MovementHandler;
+import net.mangolise.parkour.handler.PlaceHandler;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
@@ -24,23 +26,16 @@ import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.network.packet.server.play.TeamsPacket;
 import net.minestom.server.scoreboard.Team;
-import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ParkourGame extends BaseGame<ParkourGame.Config> {
-    public static final Tag<Integer> CURRENT_CHECKPOINT_TAG = Tag.Integer("current_checkpoint").defaultValue(0);
-    public static final Tag<Boolean> CAN_JUMPPAD_TAG = Tag.Boolean("can_jump_pad").defaultValue(true);
-    public static final Tag<Boolean> CAN_SEE_OTHERS_TAG = Tag.Boolean("can_see_others").defaultValue(true);
-    public static final Tag<Integer> DEATH_COUNT_TAG = Tag.Integer("death_count").defaultValue(0);
-    public static final Tag<Long> START_TIME_TAG = Tag.Long("start_time");
-    public static final Tag<Long> FINISH_TIME_TAG = Tag.Long("finish_time");
     public static @UnknownNullability ParkourGame game;
 
-    public final Map<UUID, List<CubeEntity>> cubes = new HashMap<>();
-    public @UnknownNullability MapData mapData;
+    public final Map<UUID, List<CubeEntity>> cubes = new ConcurrentHashMap<>();
     public @UnknownNullability Instance instance;
 
     public ParkourGame(Config config) {
@@ -57,7 +52,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
 
         // Load MapData
         try {
-            mapData = new MapData(instance, config.worldName);
+            MapData.loadMapData(instance, config.worldName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -71,24 +66,29 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
         GlobalEventHandler events = MinecraftServer.getGlobalEventHandler();
         events.addListener(AsyncPlayerConfigurationEvent.class, e -> {
             e.setSpawningInstance(instance);
-            e.getPlayer().setGameMode(GameMode.ADVENTURE);
+            e.getPlayer().setGameMode(MapData.itemPickups.isEmpty() ? GameMode.ADVENTURE : GameMode.SURVIVAL);
         });
 
         events.addListener(PlayerSpawnEvent.class, e -> {
             Player player = e.getPlayer();
 
+            PlaceHandler.playerBlocks.put(player.getUuid(), new ArrayList<>());
+
             // init stuff
             player.setRespawnPoint(MapData.checkpoints.getFirst().getFirst());
-            player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).setBaseValue(-128);
+            player.getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED).setBaseValue(-128);
             player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).setBaseValue(-128);
 
             ItemHandler.giveGameItems(player);
             ParkourUtil.resetPlayer(player);
-            player.updateViewableRule(viewer -> viewer.getTag(CAN_SEE_OTHERS_TAG));
+            player.updateViewableRule(viewer -> ParkourUtil.getData(viewer).canSeeOthers);
             player.setTeam(team);
         });
 
-        events.addListener(PlayerDisconnectEvent.class, e -> ParkourUtil.despawnCubes(e.getPlayer()));
+        events.addListener(PlayerDisconnectEvent.class, e -> {
+            ParkourUtil.despawnCubes(e.getPlayer());
+            PlaceHandler.playerBlocks.remove(e.getPlayer().getUuid());
+        });
 
         events.addListener(PlayerSwapItemEvent.class, e -> {
             if (!MapData.portal) {
@@ -98,12 +98,12 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
             e.setCancelled(true);
 
             Player player = e.getPlayer();
-//            Entity lookingAt = ParkourUtil.getTarget(player, instance.getNearbyEntities(player.getPosition(), 5f));
+            PlayerData playerData = ParkourUtil.getData(player);
 
             Entity lookingAt = null;
 
-            if (player.hasTag(CubeEntity.CURRENTLY_HOLDING)) {
-                lookingAt = instance.getEntityByUuid(player.getTag(CubeEntity.CURRENTLY_HOLDING));
+            if (playerData.currentlyHolding != null) {
+                lookingAt = instance.getEntityByUuid(playerData.currentlyHolding);
             } else {
                 Vec rayStart = player.getPosition().asVec().add(new Vec(0, player.getEyeHeight(), 0));
                 Vec rayDir = player.getPosition().direction();
@@ -123,20 +123,29 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
         });
 
         events.addListener(PlayerTickEvent.class, e -> {
-            Player p = e.getPlayer();
+            Player player = e.getPlayer();
+            PlayerData playerData = ParkourUtil.getData(player);
 
-            if (!p.hasTag(START_TIME_TAG)) {
+            if (playerData.startTime == 0) {
                 return;
             }
 
-            Long finishTime = Objects.requireNonNullElse(p.getTag(FINISH_TIME_TAG),
-                    System.currentTimeMillis() - p.getTag(START_TIME_TAG));
-            p.sendActionBar(Component.text(ParkourUtil.formatTime(finishTime)));
+            long finishTime = playerData.finishTime == 0 ? System.currentTimeMillis() - playerData.startTime : playerData.finishTime;
+            player.sendActionBar(Component.text(ParkourUtil.formatTime(finishTime)));
         });
 
+        PlaceHandler.setup(instance);
+
         events.addListener(ItemDropEvent.class, e -> e.setCancelled(true));
+        events.addListener(PlayerBlockBreakEvent.class, e -> e.setCancelled(true));
+
         events.addListener(PlayerMoveEvent.class, e -> MovementHandler.handlePlayerMoveEvent(e, this));
-        events.addListener(PlayerUseItemEvent.class, e -> ItemHandler.handlePlayerUseItemEvent(e, this));
+
+        events.addListener(PlayerUseItemOnBlockEvent.class, e -> ItemHandler.handlePlayerUseItemEvent(e.getPlayer(), e.getHand(), e.getItemStack().material()));
+        events.addListener(PlayerUseItemEvent.class, e -> {
+            e.setCancelled(true);
+            ItemHandler.handlePlayerUseItemEvent(e.getPlayer(), e.getHand(), e.getItemStack().material());
+        });
 
         Log.logger().info("Started Parkour game");
     }
@@ -146,7 +155,8 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
         return List.of(
                 new SignFeature(),
                 new PlayerHeadFeature(),
-                new GameModeCommandFeature()
+                new GameModeCommandFeature(),
+                new PacketDebugFeature()
         );
     }
 

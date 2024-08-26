@@ -4,12 +4,10 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.parkour.ParkourGame;
 import net.mangolise.parkour.ParkourUtil;
+import net.mangolise.parkour.PlayerData;
 import net.minestom.server.entity.Player;
-import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
-
-import static net.mangolise.parkour.ParkourGame.*;
 
 public class ItemHandler {
     public static void giveGameItems(Player player) {
@@ -25,12 +23,7 @@ public class ItemHandler {
                 .build();
     }
 
-    public static void handlePlayerUseItemEvent(PlayerUseItemEvent e, ParkourGame game) {
-        e.setCancelled(true);
-
-        Player player = e.getPlayer();
-        Material mat = e.getItemStack().material();
-
+    public static boolean handlePlayerUseItemEvent(Player player, Player.Hand hand, Material mat) {
         if (mat == Material.STICK) {
             ParkourUtil.respawnPlayer(player, false);
         }
@@ -38,23 +31,30 @@ public class ItemHandler {
             ParkourUtil.resetPlayer(player);
         }
         else if (mat == Material.ENDER_EYE) {
-            player.setTag(CAN_SEE_OTHERS_TAG, false);
-            for (Player other : game.instance.getPlayers()) {
+            PlayerData playerData = ParkourUtil.getData(player);
+            playerData.canSeeOthers = false;
+            for (Player other : ParkourGame.game.instance.getPlayers()) {
                 other.updateViewableRule();
             }
 
-            player.getInventory().setItemInHand(e.getHand(), createMenuItem(Material.ENDER_PEARL, "Show other players"));
+            player.getInventory().setItemInHand(hand, createMenuItem(Material.ENDER_PEARL, "Show other players"));
         }
         else if (mat == Material.ENDER_PEARL) {
-            player.setTag(CAN_SEE_OTHERS_TAG, true);
-            for (Player other : game.instance.getPlayers()) {
+            PlayerData playerData = ParkourUtil.getData(player);
+            playerData.canSeeOthers = true;
+            for (Player other : ParkourGame.game.instance.getPlayers()) {
                 other.updateViewableRule();
             }
 
-            player.getInventory().setItemInHand(e.getHand(), createMenuItem(Material.ENDER_EYE, "Hide other players"));
+            player.getInventory().setItemInHand(hand, createMenuItem(Material.ENDER_EYE, "Hide other players"));
         }
         else if (mat == Material.OXIDIZED_COPPER_DOOR) {
             player.kick("Bye!");
         }
+        else {
+            return false;
+        }
+
+        return true;
     }
 }

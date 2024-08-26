@@ -1,33 +1,35 @@
 package net.mangolise.parkour;
 
 import com.google.gson.*;
-import net.mangolise.parkour.element.ActivatableElement;
-import net.mangolise.parkour.element.Door;
-import net.mangolise.parkour.element.Plate;
-import net.mangolise.parkour.element.RandomlyMovingPiston;
+import net.mangolise.parkour.element.*;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class MapData {
     public static List<List<Pos>> checkpoints = new ArrayList<>();
+    public static List<ItemPickup> itemPickups = new ArrayList<>();
+    public static Set<Material> pickupMaterials = new HashSet<>();
     public static List<RandomlyMovingPiston> pistons = new ArrayList<>();
     public static List<Vec> cubeSpawns = new ArrayList<>();
     public static List<Plate> plates = new ArrayList<>();
     public static List<Door> doors = new ArrayList<>();
     public static boolean portal = false;
+    public static int deathLevel = 0;
 
-    public MapData(Instance instance, String worldName) throws IOException {
+    public static void loadMapData(Instance instance, String worldName) throws IOException {
         String stringJson = new String(Objects.requireNonNull(ClassLoader.getSystemResourceAsStream(
                 "worlds/" + worldName + ".json")).readAllBytes());
 
         Gson gson = new Gson();
         JsonObject root = gson.fromJson(stringJson, JsonObject.class);
+
+        deathLevel = getIntOrDefault(root, "deathLevel", 0);
 
         for (JsonElement rawPoss : root.getAsJsonArray("checkpoints")) {
             String[] strPoss = rawPoss.getAsString().split(",");
@@ -62,6 +64,24 @@ public class MapData {
             pistons.add(new RandomlyMovingPiston(instance, pos, strPos[3]));
         }
 
+        for (JsonElement raw : getArrayOrEmpty(root, "itemPickups")) {
+            String[] split = raw.getAsString().split("\\|");
+            if (split.length < 3) {
+                throw new IllegalArgumentException("not enough args for blockItems");
+            }
+
+            List<Vec> pos = getMultiVec(split[0]);
+            Material mat = Material.fromNamespaceId("minecraft:" + split[1]);
+            int count = Integer.parseInt(split[2]);
+
+            if (mat == null) {
+                throw new IllegalArgumentException("Material '" + split[1] + "' doesnt exist!");
+            }
+
+            itemPickups.add(new ItemPickup(pos, ItemStack.of(mat, count)));
+            pickupMaterials.add(mat);
+        }
+
         JsonObject portal = root.getAsJsonObject("portal");
         if (portal != null) {
             MapData.portal = true;
@@ -72,15 +92,8 @@ public class MapData {
             }
 
             for (JsonElement rawPos : getArrayOrEmpty(portal, "doors")) {
-                String[] positions = rawPos.getAsString().split(",");
-
-                List<Vec> pos = new ArrayList<>(positions.length);
-                for (String position : positions) {
-                    String[] strPos = position.split(" ");
-                    pos.add(getVecFromSplit(strPos));
-                }
-
-                doors.add(new Door(ParkourGame.game.instance, pos));
+                List<Vec> pos = getMultiVec(rawPos.getAsString());
+                doors.add(new Door(instance, pos));
             }
 
             for (JsonElement rawPos : getArrayOrEmpty(portal, "plates")) {
@@ -96,12 +109,27 @@ public class MapData {
                     }
                 }
 
-                plates.add(new Plate(ParkourGame.game.instance, getVecFromSplit(strPos), targets));
+                plates.add(new Plate(instance, getVecFromSplit(strPos), targets));
             }
         }
     }
 
-    private Vec getVecFromSplit(String[] strPos) {
+    private static int getIntOrDefault(JsonObject object, String memberName, int defaultValue) {
+        return Objects.requireNonNullElseGet(object.get(memberName), () -> new JsonPrimitive(defaultValue)).getAsInt();
+    }
+
+    private static List<Vec> getMultiVec(String positionsString) {
+        String[] positions = positionsString.split(",");
+
+        List<Vec> pos = new ArrayList<>(positions.length);
+        for (String position : positions) {
+            pos.add(getVecFromSplit(position.split(" ")));
+        }
+
+        return pos;
+    }
+
+    private static Vec getVecFromSplit(String[] strPos) {
         if (strPos.length < 3) {
             throw new IllegalArgumentException("coordinate without x, y, and z");
         }
@@ -109,7 +137,7 @@ public class MapData {
         return new Vec(Double.parseDouble(strPos[0]), Double.parseDouble(strPos[1]), Double.parseDouble(strPos[2]));
     }
 
-    private JsonArray getArrayOrEmpty(JsonObject object, String path) {
-        return Objects.requireNonNullElseGet(object.getAsJsonArray(path), JsonArray::new);
+    private static Iterable<JsonElement> getArrayOrEmpty(JsonObject object, String path) {
+        return Objects.requireNonNullElseGet(object.getAsJsonArray(path), List::of);
     }
 }

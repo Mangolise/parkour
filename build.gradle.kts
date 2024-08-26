@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation("net.mangolise:mango-game-sdk:latest")
+    implementation("net.mangolise:mango-game-sdk:dev")
     implementation("net.minestom:minestom-snapshots:6c5cd6544e")
     implementation("dev.hollowcube:polar:1.11.1")
 }
@@ -29,9 +29,9 @@ tasks.withType<Jar> {
 }
 
 tasks.register("packageWorlds", net.mangolise.gamesdk.gradle.PackageWorldTask::class.java)
-tasks.processResources {
-    dependsOn("packageWorlds")
-}
+//tasks.processResources {
+//    dependsOn("packageWorlds")
+//}
 
 java {
     withSourcesJar()

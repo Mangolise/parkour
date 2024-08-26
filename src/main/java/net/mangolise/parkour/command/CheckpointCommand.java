@@ -38,6 +38,6 @@ public class CheckpointCommand extends Command {
         }
 
         player.teleport(checkpoint);
-        ParkourUtil.setCheckpoint(player, checkpoint, index);
+        ParkourUtil.setCheckpoint(player, ParkourUtil.getData(player), checkpoint, index);
     }
 }

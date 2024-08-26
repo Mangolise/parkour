@@ -5,7 +5,10 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.parkour.MapData;
 import net.mangolise.parkour.ParkourGame;
 import net.mangolise.parkour.ParkourUtil;
+import net.mangolise.parkour.PlayerData;
+import net.mangolise.parkour.element.ItemPickup;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Player;
@@ -15,30 +18,40 @@ import net.minestom.server.timer.TaskSchedule;
 
 import java.util.List;
 
-import static net.mangolise.parkour.ParkourGame.*;
-
 public class MovementHandler {
     public static void handlePlayerMoveEvent(PlayerMoveEvent e, ParkourGame game) {
         Pos newPos = e.getNewPosition();
         Player player = e.getPlayer();
+        PlayerData playerData = ParkourUtil.getData(player);
 
+        // Checkpoints
         List<List<Pos>> checkpointss = MapData.checkpoints;
-        int currentCheckpoint = player.getTag(CURRENT_CHECKPOINT_TAG);
+        int currentCheckpoint = playerData.currentCheckpoint;
         int checkpointCount = checkpointss.size();
 
         for (int i = currentCheckpoint+1; i < checkpointCount; i++) {
             List<Pos> checkpoints = checkpointss.get(i);
 
             for (Pos checkpoint : checkpoints) {
-                if (checkpoint.blockX() == newPos.blockX() && checkpoint.blockZ() == newPos.blockZ() &&
-                        (checkpoint.blockY() == newPos.blockY() || checkpoint.blockY() + 1 == newPos.blockY())) {
-
+                if (isAtPosOr1Above(checkpoint, newPos)) {
                     if (i != currentCheckpoint + 1) { // this is not the next checkpoint, they skipped a checkpoint
                         player.sendActionBar(Component.text("You skipped a checkpoint!", NamedTextColor.DARK_RED));
                         continue;
                     }
 
-                    ParkourUtil.setCheckpoint(player, checkpoint, i);
+                    ParkourUtil.setCheckpoint(player, playerData, checkpoint, i);
+                }
+            }
+        }
+
+        // Item pickups
+        for (int i = 0; i < MapData.itemPickups.size(); i++) {
+            ItemPickup pickup = MapData.itemPickups.get(i);
+            for (Vec position : pickup.positions()) {
+                if (!playerData.hasCollectedItem(i) && isAtPosOr1Above(position, newPos)) {
+                    player.getInventory().addItemStack(pickup.item());
+                    playerData.addCollectedItem(i);
+                    break;
                 }
             }
         }
@@ -48,20 +61,26 @@ public class MovementHandler {
 
         // Jump pad blocks
         if (belowBlock.compare(Block.EMERALD_BLOCK)) {
-            if (player.getTag(CAN_JUMPPAD_TAG)) {
+            if (playerData.canUseJumppad) {
                 player.setVelocity(new Vec(0d, 24d, 0d));
-                player.setTag(CAN_JUMPPAD_TAG, false);
+                playerData.canUseJumppad = false;
 
                 MinecraftServer.getSchedulerManager().scheduleTask(() -> {
-                    player.setTag(CAN_JUMPPAD_TAG, true);
+                    playerData.canUseJumppad = true;
                     return TaskSchedule.stop();
                 }, TaskSchedule.tick(5));
             }
         }
 
-        // Death blocks
-        if (currentBlock.compare(Block.LAVA) || currentBlock.compare(Block.WATER)) {
+        // Death
+        if (player.getPosition().y() < MapData.deathLevel ||
+                currentBlock.compare(Block.LAVA) || currentBlock.compare(Block.WATER)) {
             ParkourUtil.respawnPlayer(player, false);
         }
+    }
+
+    private static boolean isAtPosOr1Above(Point point, Point newPos) {
+        return point.blockX() == newPos.blockX() && point.blockZ() == newPos.blockZ() &&
+                (point.blockY() == newPos.blockY() || point.blockY() + 1 == newPos.blockY());
     }
 }

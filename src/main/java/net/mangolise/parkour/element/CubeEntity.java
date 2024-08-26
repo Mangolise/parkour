@@ -1,6 +1,8 @@
 package net.mangolise.parkour.element;
 
 import net.mangolise.parkour.MapData;
+import net.mangolise.parkour.ParkourUtil;
+import net.mangolise.parkour.PlayerData;
 import net.minestom.server.collision.BoundingBox;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
@@ -16,7 +18,6 @@ import java.util.UUID;
 
 public class CubeEntity extends Entity {
     public static Tag<UUID> CUBE_OWNER = Tag.UUID("cube_owner");
-    public static Tag<UUID> CURRENTLY_HOLDING = Tag.UUID("currently_holding");
 
     private final Entity childEntity;
     private final LivingEntity shulker;
@@ -69,13 +70,14 @@ public class CubeEntity extends Entity {
 
     public void interact() {
         held = !held;
+        PlayerData playerData = ParkourUtil.getData(owner);
 
         if (held) {
-            owner.setTag(CURRENTLY_HOLDING, getUuid());
+            playerData.currentlyHolding = getUuid();
             setNoGravity(true);
 
         } else {
-            owner.removeTag(CURRENTLY_HOLDING);
+            playerData.currentlyHolding = null;
             setNoGravity(false);
         }
     }

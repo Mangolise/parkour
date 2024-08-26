@@ -1,0 +1,16 @@
+{
+  "deathLevel": 0,
+  "checkpoints": [
+    "0 32 2",
+    "0 35 10",
+    "-8 38 27 180",
+    "7 38 19 -90",
+    "-8 48 23 90"
+  ],
+  "itemPickups": [
+    "0 32 2|end_stone_bricks|2",
+    "0 35 10|end_stone_bricks|2",
+    "-8 38 27|end_stone_bricks|4",
+    "7 38 19|end_stone_bricks|7"
+  ]
+}
