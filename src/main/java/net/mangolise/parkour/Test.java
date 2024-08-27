@@ -19,9 +19,8 @@ public class Test {
         }
 
         // give every permission to every player
-        MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> {
-            e.getPlayer().addPermission(new Permission("*"));
-        });
+        MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e ->
+                e.getPlayer().addPermission(new Permission("*")));
 
         server.start("0.0.0.0", GameSdkUtils.getConfiguredPort());
 
