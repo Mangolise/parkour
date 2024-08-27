@@ -2,10 +2,7 @@ package net.mangolise.parkour;
 
 import net.kyori.adventure.text.Component;
 import net.mangolise.gamesdk.BaseGame;
-import net.mangolise.gamesdk.features.AdminCommandsFeature;
-import net.mangolise.gamesdk.features.PacketDebugFeature;
-import net.mangolise.gamesdk.features.PlayerHeadFeature;
-import net.mangolise.gamesdk.features.SignFeature;
+import net.mangolise.gamesdk.features.*;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.parkour.command.CheckpointCommand;
@@ -24,8 +21,6 @@ import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.item.ItemDropEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.network.packet.server.play.TeamsPacket;
-import net.minestom.server.scoreboard.Team;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.io.IOException;
@@ -57,9 +52,6 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
             throw new RuntimeException(e);
         }
 
-        Team team = MinecraftServer.getTeamManager().createTeam("all");
-        team.setCollisionRule(TeamsPacket.CollisionRule.NEVER);
-
         MinecraftServer.getCommandManager().register(new CheckpointCommand());
 
         // Player spawning
@@ -82,7 +74,6 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
             ItemHandler.giveGameItems(player);
             ParkourUtil.resetPlayer(player);
             player.updateViewableRule(viewer -> ParkourUtil.getData(viewer).canSeeOthers);
-            player.setTeam(team);
         });
 
         events.addListener(PlayerDisconnectEvent.class, e -> {
@@ -156,7 +147,8 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
                 new SignFeature(),
                 new PlayerHeadFeature(),
                 new AdminCommandsFeature(),
-                new PacketDebugFeature()
+                new PacketDebugFeature(),
+                new NoCollisionFeature()
         );
     }
 
