@@ -122,7 +122,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
             }
 
             long finishTime = playerData.finishTime == 0 ? System.currentTimeMillis() - playerData.startTime : playerData.finishTime;
-            player.sendActionBar(Component.text(ParkourUtil.formatTime(finishTime)));
+            player.sendActionBar(Component.text(ParkourUtil.formatTime(finishTime, playerData.finishTime != 0)));
         });
 
         PlaceHandler.setup(instance);

@@ -34,6 +34,13 @@ public class ParkourUtil {
 
     public static void respawnPlayer(Player player, boolean reset) {
         PlayerData playerData = playerDataMap.get(player.getUuid());
+
+        // if the player is on its first checkpoint and this isn't part of resetting, then just reset instead
+        if (playerData.currentCheckpoint == 0 && !reset) {
+            resetPlayer(player);
+            return;
+        }
+
         player.teleport(player.getRespawnPoint());
         playerData.canUseJumppad = true;
         playerData.discardCollectedItems();
@@ -116,10 +123,32 @@ public class ParkourUtil {
         }
     }
 
+    /**
+     * Converts a millisecond time to a human-readable timer
+     *
+     * @param time the time in milliseconds
+     * @return the formatted time
+     */
     public static String formatTime(long time) {
-        return String.format("%02d", time / 60000) + ":" +
-                String.format("%02d", time / 1000 % 60) + "." +
-                String.format("%02d", time / 50 * 5 % 100);
+        return formatTime(time, true);
+    }
+
+    /**
+     * Converts a millisecond time to a human-readable timer
+     *
+     * @param time the time in milliseconds
+     * @param exact whether to round to the nearest tick (0.05 seconds)
+     * @return the formatted time
+     */
+    public static String formatTime(long time, boolean exact) {
+        long millis = (exact ? (time / 10) : (time / 50 * 5)) % 100;
+
+        // if milliseconds
+        if (time > 60*60*1000) {
+            return String.format("%02d:%02d:%02d.%02d", time / 3600000, time / 60000 % 60, time / 1000 % 60, millis);
+        }
+
+        return String.format("%02d:%02d.%02d", time / 60000, time / 1000 % 60, millis);
     }
 
     public static void spawnCubes(Player player) {
