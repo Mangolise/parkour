@@ -7,6 +7,7 @@ import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.parkour.element.CubeEntity;
 import net.mangolise.parkour.element.Door;
 import net.mangolise.parkour.event.CheckpointEvent;
+import net.mangolise.parkour.event.RespawnEvent;
 import net.mangolise.parkour.event.FinishEvent;
 import net.mangolise.parkour.handler.PlaceHandler;
 import net.minestom.server.coordinate.Pos;
@@ -42,6 +43,8 @@ public class ParkourUtil {
             player.playSound(Sound.sound(SoundEvent.ENTITY_PLAYER_HURT, Sound.Source.PLAYER, 0.5f, 1.0f));
             playerData.deathCount += 1;
         }
+
+        EventDispatcher.call(new RespawnEvent(player, playerData.deathCount));
     }
 
     public static void resetPlayer(Player player) {

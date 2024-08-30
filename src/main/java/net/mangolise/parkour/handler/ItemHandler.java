@@ -5,7 +5,9 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.parkour.ParkourGame;
 import net.mangolise.parkour.ParkourUtil;
 import net.mangolise.parkour.PlayerData;
+import net.mangolise.parkour.event.LeaveEvent;
 import net.minestom.server.entity.Player;
+import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 
@@ -49,7 +51,7 @@ public class ItemHandler {
             player.getInventory().setItemInHand(hand, createMenuItem(Material.ENDER_EYE, "Hide other players"));
         }
         else if (mat == Material.OXIDIZED_COPPER_DOOR) {
-            player.kick("Bye!");
+            EventDispatcher.call(new LeaveEvent(player));
         }
         else {
             return false;
