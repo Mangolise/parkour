@@ -6,8 +6,6 @@ import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.extras.bungee.BungeeCordProxy;
 import net.minestom.server.permission.Permission;
 
-import java.util.ArrayList;
-
 // This is a dev server, not used in production
 public class Test {
     public static void main(String[] args) {
@@ -24,7 +22,7 @@ public class Test {
 
         server.start("0.0.0.0", GameSdkUtils.getConfiguredPort());
 
-        ParkourGame.Config config = new ParkourGame.Config(System.getenv("MAP"), new ArrayList<>());
+        ParkourGame.Config config = new ParkourGame.Config(System.getenv("MAP"));
         ParkourGame game = new ParkourGame(config);
         game.setup();
     }

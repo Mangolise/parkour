@@ -152,6 +152,5 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
         );
     }
 
-    public record PlayerConfig(UUID uuid, String name, long bestTime) { }
-    public record Config(String worldName, List<PlayerConfig> records) { }
+    public record Config(String worldName) { }
 }
