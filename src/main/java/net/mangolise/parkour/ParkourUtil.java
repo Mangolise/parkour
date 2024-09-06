@@ -3,6 +3,7 @@ package net.mangolise.parkour;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.parkour.element.CubeEntity;
 import net.mangolise.parkour.element.Door;
@@ -96,7 +97,7 @@ public class ParkourUtil {
             int deathCount = playerData.deathCount;
             playerData.finishTime = timeSpent;
 
-            String timeSpentDis =  ParkourUtil.formatTime(timeSpent);
+            String timeSpentDis = ChatUtil.formatTime(timeSpent);
             String subtitle = timeSpentDis + ", " + deathCount + " death";
             if (deathCount != 1) subtitle += 's';
 
@@ -121,34 +122,6 @@ public class ParkourUtil {
                         Component.text(subtitle, NamedTextColor.GREEN));
             }
         }
-    }
-
-    /**
-     * Converts a millisecond time to a human-readable timer
-     *
-     * @param time the time in milliseconds
-     * @return the formatted time
-     */
-    public static String formatTime(long time) {
-        return formatTime(time, true);
-    }
-
-    /**
-     * Converts a millisecond time to a human-readable timer
-     *
-     * @param time the time in milliseconds
-     * @param exact whether to round to the nearest tick (0.05 seconds)
-     * @return the formatted time
-     */
-    public static String formatTime(long time, boolean exact) {
-        long millis = (exact ? (time / 10) : (time / 50 * 5)) % 100;
-
-        // if milliseconds
-        if (time > 60*60*1000) {
-            return String.format("%02d:%02d:%02d.%02d", time / 3600000, time / 60000 % 60, time / 1000 % 60, millis);
-        }
-
-        return String.format("%02d:%02d.%02d", time / 60000, time / 1000 % 60, millis);
     }
 
     public static void spawnCubes(Player player) {

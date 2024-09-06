@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.*;
 import net.mangolise.gamesdk.log.Log;
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.parkour.command.CheckpointCommand;
 import net.mangolise.parkour.element.CubeEntity;
@@ -122,7 +123,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
             }
 
             long finishTime = playerData.finishTime == 0 ? System.currentTimeMillis() - playerData.startTime : playerData.finishTime;
-            player.sendActionBar(Component.text(ParkourUtil.formatTime(finishTime, playerData.finishTime != 0)));
+            player.sendActionBar(Component.text(ChatUtil.formatTime(finishTime, playerData.finishTime != 0)));
         });
 
         PlaceHandler.setup(instance);
