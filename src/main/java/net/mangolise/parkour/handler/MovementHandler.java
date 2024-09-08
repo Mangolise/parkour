@@ -38,8 +38,6 @@ public class MovementHandler {
 
         if (!player.hasMoved) {
             player.hasMoved = true;
-            player.sendMessage("moved");
-
             player.startTime = System.currentTimeMillis();
         }
 
