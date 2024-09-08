@@ -4,7 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.parkour.ParkourGame;
 import net.mangolise.parkour.ParkourUtil;
-import net.mangolise.parkour.PlayerData;
+import net.mangolise.parkour.ParkourPlayer;
 import net.mangolise.parkour.event.LeaveEvent;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
@@ -25,7 +25,7 @@ public class ItemHandler {
                 .build();
     }
 
-    public static boolean handlePlayerUseItemEvent(Player player, Player.Hand hand, Material mat) {
+    public static boolean handlePlayerUseItemEvent(ParkourPlayer player, Player.Hand hand, Material mat) {
         if (mat == Material.STICK) {
             ParkourUtil.respawnPlayer(player, false);
         }
@@ -33,8 +33,7 @@ public class ItemHandler {
             ParkourUtil.resetPlayer(player);
         }
         else if (mat == Material.ENDER_EYE) {
-            PlayerData playerData = ParkourUtil.getData(player);
-            playerData.canSeeOthers = false;
+            player.canSeeOthers = false;
             for (Player other : ParkourGame.game.instance.getPlayers()) {
                 other.updateViewableRule();
             }
@@ -42,8 +41,7 @@ public class ItemHandler {
             player.getInventory().setItemInHand(hand, createMenuItem(Material.ENDER_PEARL, "Show other players"));
         }
         else if (mat == Material.ENDER_PEARL) {
-            PlayerData playerData = ParkourUtil.getData(player);
-            playerData.canSeeOthers = true;
+            player.canSeeOthers = true;
             for (Player other : ParkourGame.game.instance.getPlayers()) {
                 other.updateViewableRule();
             }

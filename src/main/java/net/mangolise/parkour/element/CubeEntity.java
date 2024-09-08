@@ -1,14 +1,12 @@
 package net.mangolise.parkour.element;
 
 import net.mangolise.parkour.MapData;
-import net.mangolise.parkour.ParkourUtil;
-import net.mangolise.parkour.PlayerData;
+import net.mangolise.parkour.ParkourPlayer;
 import net.minestom.server.collision.BoundingBox;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.LivingEntity;
-import net.minestom.server.entity.Player;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
@@ -22,10 +20,10 @@ public class CubeEntity extends Entity {
     private final Entity childEntity;
     private final LivingEntity shulker;
 
-    private final Player owner;
+    private final ParkourPlayer owner;
     private boolean held = false;
 
-    public CubeEntity(Instance instance, Player owner, Vec pos) {
+    public CubeEntity(Instance instance, ParkourPlayer owner, Vec pos) {
         super(EntityType.BLOCK_DISPLAY);
         this.owner = owner;
 
@@ -70,14 +68,13 @@ public class CubeEntity extends Entity {
 
     public void interact() {
         held = !held;
-        PlayerData playerData = ParkourUtil.getData(owner);
 
         if (held) {
-            playerData.currentlyHolding = getUuid();
+            owner.currentlyHolding = getUuid();
             setNoGravity(true);
 
         } else {
-            playerData.currentlyHolding = null;
+            owner.currentlyHolding = null;
             setNoGravity(false);
         }
     }

@@ -2,6 +2,7 @@ package net.mangolise.parkour.command;
 
 import net.mangolise.gamesdk.features.commands.MangoliseCommand;
 import net.mangolise.parkour.MapData;
+import net.mangolise.parkour.ParkourPlayer;
 import net.mangolise.parkour.ParkourUtil;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentType;
@@ -29,7 +30,7 @@ public class CheckpointCommand extends MangoliseCommand {
         }
 
         sender.teleport(checkpoint);
-        ParkourUtil.setCheckpoint(sender, ParkourUtil.getData(sender), checkpoint, index);
+        ParkourUtil.setCheckpoint((ParkourPlayer) sender, checkpoint, index);
     }
 
     @Override

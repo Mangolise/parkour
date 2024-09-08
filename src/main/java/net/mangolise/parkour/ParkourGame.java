@@ -16,7 +16,6 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.GameMode;
-import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.item.ItemDropEvent;
@@ -53,6 +52,8 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
             throw new RuntimeException(e);
         }
 
+        MinecraftServer.getConnectionManager().setPlayerProvider(ParkourPlayer::new);
+
         MinecraftServer.getCommandManager().register(new CheckpointCommand());
 
         // Player spawning
@@ -63,7 +64,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
         });
 
         events.addListener(PlayerSpawnEvent.class, e -> {
-            Player player = e.getPlayer();
+            ParkourPlayer player = (ParkourPlayer) e.getPlayer();
 
             PlaceHandler.playerBlocks.put(player.getUuid(), new ArrayList<>());
 
@@ -74,11 +75,11 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
 
             ItemHandler.giveGameItems(player);
             ParkourUtil.resetPlayer(player);
-            player.updateViewableRule(viewer -> ParkourUtil.getData(viewer).canSeeOthers);
+            player.updateViewableRule(viewer -> ((ParkourPlayer) viewer).canSeeOthers);
         });
 
         events.addListener(PlayerDisconnectEvent.class, e -> {
-            ParkourUtil.despawnCubes(e.getPlayer());
+            ParkourUtil.despawnCubes((ParkourPlayer) e.getPlayer());
             PlaceHandler.playerBlocks.remove(e.getPlayer().getUuid());
         });
 
@@ -89,13 +90,12 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
 
             e.setCancelled(true);
 
-            Player player = e.getPlayer();
-            PlayerData playerData = ParkourUtil.getData(player);
+            ParkourPlayer player = (ParkourPlayer) e.getPlayer();
 
             Entity lookingAt = null;
 
-            if (playerData.currentlyHolding != null) {
-                lookingAt = instance.getEntityByUuid(playerData.currentlyHolding);
+            if (player.currentlyHolding != null) {
+                lookingAt = instance.getEntityByUuid(player.currentlyHolding);
             } else {
                 Vec rayStart = player.getPosition().asVec().add(new Vec(0, player.getEyeHeight(), 0));
                 Vec rayDir = player.getPosition().direction();
@@ -115,15 +115,14 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
         });
 
         events.addListener(PlayerTickEvent.class, e -> {
-            Player player = e.getPlayer();
-            PlayerData playerData = ParkourUtil.getData(player);
+            ParkourPlayer player = (ParkourPlayer) e.getPlayer();
 
-            if (playerData.startTime == 0) {
+            if (player.startTime == 0) {
                 return;
             }
 
-            long finishTime = playerData.finishTime == 0 ? System.currentTimeMillis() - playerData.startTime : playerData.finishTime;
-            player.sendActionBar(Component.text(ChatUtil.formatTime(finishTime, playerData.finishTime != 0)));
+            long finishTime = player.finishTime == 0 ? System.currentTimeMillis() - player.startTime : player.finishTime;
+            player.sendActionBar(Component.text(ChatUtil.formatTime(finishTime, player.finishTime != 0)));
         });
 
         PlaceHandler.setup(instance);
@@ -133,10 +132,10 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
 
         events.addListener(PlayerMoveEvent.class, e -> MovementHandler.handlePlayerMoveEvent(e, this));
 
-        events.addListener(PlayerUseItemOnBlockEvent.class, e -> ItemHandler.handlePlayerUseItemEvent(e.getPlayer(), e.getHand(), e.getItemStack().material()));
+        events.addListener(PlayerUseItemOnBlockEvent.class, e -> ItemHandler.handlePlayerUseItemEvent((ParkourPlayer) e.getPlayer(), e.getHand(), e.getItemStack().material()));
         events.addListener(PlayerUseItemEvent.class, e -> {
             e.setCancelled(true);
-            ItemHandler.handlePlayerUseItemEvent(e.getPlayer(), e.getHand(), e.getItemStack().material());
+            ItemHandler.handlePlayerUseItemEvent((ParkourPlayer) e.getPlayer(), e.getHand(), e.getItemStack().material());
         });
 
         Log.logger().info("Started Parkour game");

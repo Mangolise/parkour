@@ -6,7 +6,7 @@ import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.parkour.MapData;
 import net.mangolise.parkour.ParkourGame;
 import net.mangolise.parkour.ParkourUtil;
-import net.mangolise.parkour.PlayerData;
+import net.mangolise.parkour.ParkourPlayer;
 import net.mangolise.parkour.element.ItemPickup;
 import net.mangolise.parkour.event.JumpPadEvent;
 import net.minestom.server.MinecraftServer;
@@ -29,12 +29,11 @@ import java.util.Set;
 public class MovementHandler {
     public static void handlePlayerMoveEvent(PlayerMoveEvent e, ParkourGame game) {
         Pos newPos = e.getNewPosition();
-        Player player = e.getPlayer();
-        PlayerData playerData = ParkourUtil.getData(player);
+        ParkourPlayer player = (ParkourPlayer) e.getPlayer();
 
         // Checkpoints
         List<List<Pos>> checkpointss = MapData.checkpoints;
-        int currentCheckpoint = playerData.currentCheckpoint;
+        int currentCheckpoint = player.currentCheckpoint;
         int checkpointCount = checkpointss.size();
 
         for (int i = currentCheckpoint+1; i < checkpointCount; i++) {
@@ -47,7 +46,7 @@ public class MovementHandler {
                         continue;
                     }
 
-                    ParkourUtil.setCheckpoint(player, playerData, checkpoint, i);
+                    ParkourUtil.setCheckpoint(player, checkpoint, i);
                 }
             }
         }
@@ -56,9 +55,9 @@ public class MovementHandler {
         for (int i = 0; i < MapData.itemPickups.size(); i++) {
             ItemPickup pickup = MapData.itemPickups.get(i);
             for (Vec pickupPos : pickup.positions()) {
-                if (!playerData.hasCollectedItem(i) && isAtPosOr1Above(player, pickupPos, newPos)) {
+                if (!player.hasCollectedItem(i) && isAtPosOr1Above(player, pickupPos, newPos)) {
                     player.getInventory().addItemStack(pickup.item());
-                    playerData.addCollectedItem(i);
+                    player.addCollectedItem(i);
                     break;
                 }
             }
@@ -69,12 +68,12 @@ public class MovementHandler {
 
         // Jump pad blocks
         if (belowBlock.contains(Block.EMERALD_BLOCK.id())) {
-            if (playerData.canUseJumppad) {
+            if (player.canUseJumppad) {
                 player.setVelocity(new Vec(0d, 24d, 0d));
-                playerData.canUseJumppad = false;
+                player.canUseJumppad = false;
 
                 MinecraftServer.getSchedulerManager().scheduleTask(() -> {
-                    playerData.canUseJumppad = true;
+                    player.canUseJumppad = true;
                     return TaskSchedule.stop();
                 }, TaskSchedule.tick(5));
 

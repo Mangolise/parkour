@@ -2,6 +2,7 @@ package net.mangolise.parkour.handler;
 
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.parkour.MapData;
+import net.mangolise.parkour.ParkourPlayer;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Point;
@@ -11,7 +12,6 @@ import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.PlayerPacketEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.block.BlockManager;
 import net.minestom.server.inventory.PlayerInventory;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -34,7 +34,7 @@ public class PlaceHandler {
         // intercept placing before minestom does anything
         events.addListener(PlayerPacketEvent.class, e -> {
             if (e.getPacket() instanceof ClientPlayerBlockPlacementPacket packet) {
-                Player player = e.getPlayer();
+                ParkourPlayer player = (ParkourPlayer) e.getPlayer();
                 Player.Hand hand = packet.hand();
                 ItemStack clickedItem = player.getItemInHand(hand);
                 Material material = clickedItem.material();
@@ -57,7 +57,7 @@ public class PlaceHandler {
 
                 {
                     Block oldBlock = instance.getBlock(pos);
-                    DimensionType instanceDim = instance.getCachedDimensionType();
+                    DimensionType instanceDim = MinecraftServer.getDimensionTypeRegistry().get(instance.getDimensionType());
 
                     final Set<Integer> replaceableBlocks = Set.of(Block.AIR.id(), Block.LAVA.id(), Block.WATER.id());
 
