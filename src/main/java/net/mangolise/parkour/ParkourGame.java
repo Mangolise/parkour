@@ -128,7 +128,6 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
 
         events.addListener(PlayerMoveEvent.class, e -> MovementHandler.handlePlayerMoveEvent(e, this));
 
-        events.addListener(PlayerUseItemOnBlockEvent.class, e -> ItemHandler.handlePlayerUseItemEvent((ParkourPlayer) e.getPlayer(), e.getHand(), e.getItemStack().material()));
         events.addListener(PlayerUseItemEvent.class, e -> {
             e.setCancelled(true);
             ItemHandler.handlePlayerUseItemEvent((ParkourPlayer) e.getPlayer(), e.getHand(), e.getItemStack().material());
