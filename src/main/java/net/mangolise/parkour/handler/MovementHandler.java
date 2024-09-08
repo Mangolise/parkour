@@ -31,6 +31,18 @@ public class MovementHandler {
         Pos newPos = e.getNewPosition();
         ParkourPlayer player = (ParkourPlayer) e.getPlayer();
 
+        // if the player didn't move (they turned their head)
+        if (newPos.distanceSquared(player.getPosition()) < Vec.EPSILON) {
+            return;
+        }
+
+        if (!player.hasMoved) {
+            player.hasMoved = true;
+            player.sendMessage("moved");
+
+            player.startTime = System.currentTimeMillis();
+        }
+
         // Checkpoints
         List<List<Pos>> checkpointss = MapData.checkpoints;
         int currentCheckpoint = player.currentCheckpoint;
@@ -84,7 +96,7 @@ public class MovementHandler {
         // Death
         if (player.getPosition().y() < MapData.deathLevel ||
                 currentBlock.contains(Block.LAVA.id()) || currentBlock.contains(Block.WATER.id())) {
-            ParkourUtil.respawnPlayer(player, false);
+            player.respawnToCheckpoint();
         }
     }
 

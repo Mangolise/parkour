@@ -74,7 +74,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
             player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).setBaseValue(-128);
 
             ItemHandler.giveGameItems(player);
-            ParkourUtil.resetPlayer(player);
+            player.respawnToStart();
             player.updateViewableRule(viewer -> ((ParkourPlayer) viewer).canSeeOthers);
         });
 
@@ -117,12 +117,8 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
         events.addListener(PlayerTickEvent.class, e -> {
             ParkourPlayer player = (ParkourPlayer) e.getPlayer();
 
-            if (player.startTime == 0) {
-                return;
-            }
-
-            long finishTime = player.finishTime == 0 ? System.currentTimeMillis() - player.startTime : player.finishTime;
-            player.sendActionBar(Component.text(ChatUtil.formatTime(finishTime, player.finishTime != 0)));
+            long time = player.calculateTimeSpent(System.currentTimeMillis());
+            player.sendActionBar(Component.text(ChatUtil.formatTime(time, player.finishTime != 0)));
         });
 
         PlaceHandler.setup(instance);

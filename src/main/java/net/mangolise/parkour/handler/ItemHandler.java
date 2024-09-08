@@ -3,7 +3,6 @@ package net.mangolise.parkour.handler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.parkour.ParkourGame;
-import net.mangolise.parkour.ParkourUtil;
 import net.mangolise.parkour.ParkourPlayer;
 import net.mangolise.parkour.event.LeaveEvent;
 import net.minestom.server.entity.Player;
@@ -27,10 +26,10 @@ public class ItemHandler {
 
     public static boolean handlePlayerUseItemEvent(ParkourPlayer player, Player.Hand hand, Material mat) {
         if (mat == Material.STICK) {
-            ParkourUtil.respawnPlayer(player, false);
+            player.respawnToCheckpoint();
         }
         else if (mat == Material.DEAD_BUSH) {
-            ParkourUtil.resetPlayer(player);
+            player.respawnToStart();
         }
         else if (mat == Material.ENDER_EYE) {
             player.canSeeOthers = false;

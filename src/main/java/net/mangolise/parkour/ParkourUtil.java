@@ -6,9 +6,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.parkour.element.CubeEntity;
-import net.mangolise.parkour.element.Door;
 import net.mangolise.parkour.event.CheckpointEvent;
-import net.mangolise.parkour.event.RespawnEvent;
 import net.mangolise.parkour.event.FinishEvent;
 import net.mangolise.parkour.handler.PlaceHandler;
 import net.minestom.server.coordinate.Pos;
@@ -21,56 +19,20 @@ import java.util.*;
 import static net.mangolise.parkour.ParkourGame.*;
 
 public class ParkourUtil {
-    public static void respawnPlayer(ParkourPlayer player, boolean reset) {
-        // if the player is on its first checkpoint and this isn't part of resetting, then just reset instead
-        if (player.currentCheckpoint == 0 && !reset) {
-            resetPlayer(player);
-            return;
-        }
-
-        player.teleport(player.getRespawnPoint());
-        player.canUseJumppad = true;
-        player.discardCollectedItems();
-        PlaceHandler.removeBlocks(player);
-
-        if (!reset) {
-            player.playSound(Sound.sound(SoundEvent.ENTITY_PLAYER_HURT, Sound.Source.PLAYER, 0.5f, 1.0f));
-            player.deathCount += 1;
-        }
-
-        EventDispatcher.call(new RespawnEvent(player, player.deathCount));
-    }
-
-    public static void resetPlayer(ParkourPlayer player) {
-        // replace the old PlayerData with new PlayerData
-        player.resetPlayerData();
-        player.startTime = System.currentTimeMillis();
-
-        player.setRespawnPoint(MapData.checkpoints.getFirst().getFirst());
-        player.setAllowFlying(false);
-        player.setFlying(false);
-        respawnPlayer(player, true);
-
-        despawnCubes(player);
-        spawnCubes(player);
-
-        for (Door door : MapData.doors) {
-            door.deactivate(player);
-        }
-
-        player.playSound(Sound.sound(SoundEvent.BLOCK_AMETHYST_BLOCK_RESONATE, Sound.Source.PLAYER, 1.0f, 1.5f));
-    }
-
     public static void setCheckpoint(ParkourPlayer player, Pos checkpoint, int index) {
         player.currentCheckpoint = index;
         player.applyCollectedItems();
 
         PlaceHandler.removeBlocks(player);
-        player.setRespawnPoint(checkpoint.add(0d, 0.05d, 0d));
+        player.setRespawnPoint(checkpoint);
 
         // if normal checkpoint
         int checkpointCount = MapData.checkpoints.size();
         if (index != checkpointCount-1) {
+            long currentTime = System.currentTimeMillis();
+            player.checkpointTime = player.calculateTimeSpent(currentTime);
+            player.startTime = currentTime;
+
             player.playSound(Sound.sound(SoundEvent.ENTITY_EXPERIENCE_ORB_PICKUP, Sound.Source.BLOCK, 0.5f, 1.0f));
             GameSdkUtils.showTitle(player, 100, 1200, 100,
                     Component.empty(),
@@ -78,7 +40,7 @@ public class ParkourUtil {
                             (checkpointCount - 1), NamedTextColor.DARK_GREEN));
             EventDispatcher.call(new CheckpointEvent(player, index));
         } else { // if win
-            long timeSpent = System.currentTimeMillis() - player.startTime;
+            long timeSpent = player.calculateTimeSpent(System.currentTimeMillis());
             int deathCount = player.deathCount;
             player.finishTime = timeSpent;
 
