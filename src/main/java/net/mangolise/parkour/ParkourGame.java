@@ -21,6 +21,8 @@ import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.item.ItemDropEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.registry.DynamicRegistry;
+import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.io.IOException;
@@ -41,9 +43,16 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
     @Override
     public void setup() {
         super.setup();
-        instance = MinecraftServer.getInstanceManager().createInstanceContainer(
+
+        DimensionType dimension = DimensionType.builder().build();
+        DynamicRegistry.Key<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().register("parkour", dimension);
+
+        instance = MinecraftServer.getInstanceManager().createInstanceContainer(dim,
                 GameSdkUtils.getPolarLoaderFromResource("worlds/" + config.worldName + ".polar"));
         instance.enableAutoChunkLoad(true);
+
+        instance.setTimeRate(0);
+        instance.setTimeSynchronizationTicks(0);
 
         // Load MapData
         try {

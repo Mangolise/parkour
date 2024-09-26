@@ -2,6 +2,7 @@ package net.mangolise.parkour.handler;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.mangolise.gamesdk.menu.TimeSwitcherMenu;
 import net.mangolise.parkour.ParkourGame;
 import net.mangolise.parkour.ParkourPlayer;
 import net.mangolise.parkour.event.LeaveEvent;
@@ -16,6 +17,7 @@ public class ItemHandler {
         player.getInventory().addItemStack(createMenuItem(Material.DEAD_BUSH, "Restart"));
         player.getInventory().addItemStack(createMenuItem(Material.ENDER_EYE, "Hide other players"));
         player.getInventory().addItemStack(createMenuItem(Material.OXIDIZED_COPPER_DOOR, "Leave"));
+        player.getInventory().addItemStack(createMenuItem(Material.CLOCK, "Time Switcher"));
     }
 
     private static ItemStack createMenuItem(Material mat, String name) {
@@ -49,6 +51,9 @@ public class ItemHandler {
         }
         else if (mat == Material.OXIDIZED_COPPER_DOOR) {
             EventDispatcher.call(new LeaveEvent(player));
+        }
+        else if (mat == Material.CLOCK) {
+            player.openInventory(TimeSwitcherMenu.MENU.getInventory());
         }
         else {
             return false;
