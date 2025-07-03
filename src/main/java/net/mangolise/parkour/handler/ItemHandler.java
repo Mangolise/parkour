@@ -7,6 +7,7 @@ import net.mangolise.parkour.ParkourGame;
 import net.mangolise.parkour.ParkourPlayer;
 import net.mangolise.parkour.event.LeaveEvent;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -26,7 +27,7 @@ public class ItemHandler {
                 .build();
     }
 
-    public static boolean handlePlayerUseItemEvent(ParkourPlayer player, Player.Hand hand, Material mat) {
+    public static boolean handlePlayerUseItemEvent(ParkourPlayer player, PlayerHand hand, Material mat) {
         if (mat == Material.STICK) {
             player.respawnToCheckpoint();
         }
@@ -39,7 +40,7 @@ public class ItemHandler {
                 other.updateViewableRule();
             }
 
-            player.getInventory().setItemInHand(hand, createMenuItem(Material.ENDER_PEARL, "Show other players"));
+            player.setItemInHand(hand, createMenuItem(Material.ENDER_PEARL, "Show other players"));
         }
         else if (mat == Material.ENDER_PEARL) {
             player.canSeeOthers = true;
@@ -47,7 +48,7 @@ public class ItemHandler {
                 other.updateViewableRule();
             }
 
-            player.getInventory().setItemInHand(hand, createMenuItem(Material.ENDER_EYE, "Hide other players"));
+            player.setItemInHand(hand, createMenuItem(Material.ENDER_EYE, "Hide other players"));
         }
         else if (mat == Material.OXIDIZED_COPPER_DOOR) {
             EventDispatcher.call(new LeaveEvent(player));

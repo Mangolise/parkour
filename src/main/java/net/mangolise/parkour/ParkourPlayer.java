@@ -6,6 +6,7 @@ import net.mangolise.parkour.event.RespawnEvent;
 import net.mangolise.parkour.handler.PlaceHandler;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
+import net.minestom.server.network.player.GameProfile;
 import net.minestom.server.network.player.PlayerConnection;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.NotNull;
@@ -29,8 +30,8 @@ public class ParkourPlayer extends Player {
     private final Set<Integer> collectedItems;
     private final Set<Integer> newCollectedItems;
 
-    public ParkourPlayer(@NotNull UUID uuid, @NotNull String username, @NotNull PlayerConnection connection) {
-        super(uuid, username, connection);
+    public ParkourPlayer(@NotNull PlayerConnection connection, @NotNull GameProfile gameProfile) {
+        super(connection, gameProfile);
         collectedItems = new HashSet<>();
         newCollectedItems = new HashSet<>();
         resetPlayerData();
