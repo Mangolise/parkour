@@ -71,7 +71,7 @@ public class MapData {
             }
 
             List<Vec> pos = getMultiVec(split[0]);
-            Material mat = Material.fromNamespaceId("minecraft:" + split[1]);
+            Material mat = Material.fromKey("minecraft:" + split[1]);
             int count = Integer.parseInt(split[2]);
 
             if (mat == null) {

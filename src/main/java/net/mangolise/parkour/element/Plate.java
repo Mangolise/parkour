@@ -1,5 +1,6 @@
 package net.mangolise.parkour.element;
 
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.mangolise.parkour.ParkourGame;
 import net.minestom.server.coordinate.Point;
@@ -9,7 +10,6 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockHandler;
 import net.minestom.server.network.packet.server.play.BlockChangePacket;
 import net.minestom.server.sound.SoundEvent;
-import net.minestom.server.utils.NamespaceID;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -27,8 +27,8 @@ public class Plate implements BlockHandler {
     }
 
     @Override
-    public @NotNull NamespaceID getNamespaceId() {
-        return NamespaceID.from("parkour:plate");
+    public @NotNull Key getKey() {
+        return Key.key("parkour:plate");
     }
 
     @Override

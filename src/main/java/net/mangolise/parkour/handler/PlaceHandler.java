@@ -8,6 +8,7 @@ import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.PlayerPacketEvent;
 import net.minestom.server.instance.Instance;
@@ -35,7 +36,7 @@ public class PlaceHandler {
         events.addListener(PlayerPacketEvent.class, e -> {
             if (e.getPacket() instanceof ClientPlayerBlockPlacementPacket packet) {
                 ParkourPlayer player = (ParkourPlayer) e.getPlayer();
-                Player.Hand hand = packet.hand();
+                PlayerHand hand = packet.hand();
                 ItemStack clickedItem = player.getItemInHand(hand);
                 Material material = clickedItem.material();
 
@@ -75,7 +76,7 @@ public class PlaceHandler {
                 player.sendPackets(new BlockChangePacket(pos, newBlock), new AcknowledgeBlockChangePacket(packet.sequence()));
 
                 // get rid of one of the blocks
-                player.getInventory().setItemInHand(hand, clickedItem.consume(1));
+                player.setItemInHand(hand, clickedItem.consume(1));
             } else if (e.getPacket() instanceof ClientPlayerDiggingPacket packet && packet.status() == ClientPlayerDiggingPacket.Status.STARTED_DIGGING) {
                 // if they start digging all blocks disappear
                 e.setCancelled(true);

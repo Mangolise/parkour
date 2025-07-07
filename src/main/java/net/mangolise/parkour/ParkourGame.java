@@ -44,10 +44,7 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
     public void setup() {
         super.setup();
 
-        DimensionType dimension = DimensionType.builder().build();
-        DynamicRegistry.Key<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().register("parkour", dimension);
-
-        instance = MinecraftServer.getInstanceManager().createInstanceContainer(dim,
+        instance = MinecraftServer.getInstanceManager().createInstanceContainer(
                 GameSdkUtils.getPolarLoaderFromResource("worlds/" + config.worldName + ".polar"));
         instance.enableAutoChunkLoad(true);
 
@@ -79,8 +76,8 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
 
             // init stuff
             player.setRespawnPoint(MapData.checkpoints.getFirst().getFirst());
-            player.getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED).setBaseValue(-128);
-            player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).setBaseValue(-128);
+            player.getAttribute(Attribute.BLOCK_BREAK_SPEED).setBaseValue(-128);
+            player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(-128);
 
             ItemHandler.giveGameItems(player);
             player.respawnToStart();
@@ -151,7 +148,6 @@ public class ParkourGame extends BaseGame<ParkourGame.Config> {
                 new SignFeature(),
                 new PlayerHeadFeature(),
                 new AdminCommandsFeature(),
-                new PacketDebugFeature(),
                 new NoCollisionFeature()
         );
     }
